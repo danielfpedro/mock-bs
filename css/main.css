@@ -335,11 +335,16 @@ textarea {
     min-height: 40px!important;
     border-radius: 4px;
 }
-.editor-selector{
+.editor-selector, .editor-selected{
     border-radius: 3px;
 	border: 1px solid #e74c3c;
 	position: absolute;
     z-index: 1000;
+    display: none;
+    pointer-events: none;
+}
+.editor-selected{
+    background-color: blue;
 }
 /*LAYOUT*/
 html, body {
@@ -373,4 +378,57 @@ html, body {
 }
 ul#components > li > a {
     cursor: -webkit-grab; cursor: -moz-grab;
+}
+
+
+
+
+
+
+/*SELECTORS*/
+.selectedOver, .selected{
+  border-radius: 2px;
+  border: 1.5px solid #9b59b6;
+  position:absolute;
+  z-index:1000;
+  display: none;
+  pointer-events: none;
+}
+.selected{
+    background-color: rgba(155, 89, 182, 0.1);
+    min-width: 40px;
+}
+.selectedTitle{
+  padding-left: 5px;
+  padding-right: 5px;
+  background-color: #3498db;
+  left: 0;
+  border-radius: 2px;
+  height: auto;
+  width: auto;
+  position: absolute;
+  color: #FFF;
+  text-transform: lowercase;
+  font-size: 11px;
+}
+.selectedBtnNegative, .selectedBtnPositive{
+  pointer-events: auto;
+  z-index: 1000;
+  cursor: pointer;
+  border: 0;
+  border-radius: 2px;
+  position: absolute;
+  right: 0;
+  display: none;
+  background-color: #e74c3c;
+  color: #FFF;
+  font-weight: bold;
+  width: 20px;
+  padding: 2px 0;
+  font-size: 12px;
+  text-align: center;
+}
+.selectedBtnPositive{
+  background-color: #3498db;
+  left: 0;
 }

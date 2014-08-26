@@ -1,6 +1,21 @@
 $(function(){
 
-	var $selector = $('<div/>').addClass('editor-selector');
+	var $selected = $('<div/>').addClass('selected').appendTo('body');
+	var $selectedOver = $('<div/>').addClass('selectedOver').appendTo('body');
+
+	var $selectedBtnNegative = $('<button/>')
+			.attr({'title': 'Deletar'})
+			.addClass('selectedBtnNegative')
+			.html('<span class="glyphicon glyphicon-trash"></span>')
+			.appendTo($selected),
+		$selectedBtnPositive = $('<button/>')
+			.attr({'title': 'Duplicar', 'data-nice-behavior': 'duplicate-self'})
+			.addClass('selectedBtnPositive')
+			.html('<span class="glyphicon glyphicon-share-alt"></span>')
+			.appendTo($selected);
+
+	var $selectedTitle = $('<div/>')
+		.addClass('selectedTitle').appendTo($selected);
 
 	$('ul#components > li > a').click(function(){
 		return false;
@@ -94,6 +109,16 @@ $(function(){
 		{'label': 'Small', 'value': 'well-sm'},
 	];
 	var properties = [
+		{
+			type: 'header',
+			itens: [
+				{
+					label: 'Texto',
+					type: 'textarea',
+					behavior: 'property-text'
+				},
+			]
+		},
 		{
 			type: 'well',
 			itens: [
@@ -276,48 +301,56 @@ $(function(){
 			}
 		});
 	}
-	
 	$('#tela').on('click', '*', function(e){
 		e.stopPropagation();
 		var $this = $(this);
 		$current_component = $this;
 		buildProperties();
-		// ATENÇÃO getFamily obrigatoriamente deve vir a
-		
 		getFamily();
-		//setSelector($this);
-/*		e.stopPropagation();
-		var w = $(this).width();
-		var h = $(this).height();
-		var pos = $(this).position();
-		var top = pos.top + h;
-		console.log(h);
-		var type = $(this).attr('data-type');
-		$selector.text(type).css({left: pos.left, top: pos.top}).show();*/
+		setSelected($this);
 	});
-	function removeSelector() {
-		$selector.detach();
+	// $("#tela").on({
+	// 	mouseenter: function (e) {
+	// 		// e.stopPropagation();
+	// 		setSelected($(this), $selectedOver);
+	// 	},
+	// 	mouseleave: function (e) {
+	// 		// e.stopPropagation();
+	// 		removeSelected($selectedOver);
+	// 	}
+	// }, '*');
+	function removeSelected() {
+		$selected.hide();
 	}
-	function setSelector($this) {
-		var w = $this.outerWidth(),
-			h = $this.outerHeight();
-
-		$selector
-			.css(
-				{
-					'width': w,
-					'height': h,
-					'left': $this.offset().left,
-					'top': $this.offset().top
-				}
-			)
-			.appendTo('body');
+	function getObjDimensions($this){
+		return {
+			width: $this.outerWidth(),
+			height: $this.outerHeight(),
+			left: $this.offset().left,
+			top: $this.offset().top
+		};
 	}
-	$('#family').on('click', '#item-family', function(){
+	function setSelected ($this){
+		var dim = getObjDimensions($this);
+		$selected.css({left: dim.left, top: dim.top, height: dim.height, width: dim.width}).show();
+		$selectedBtnNegative.css({'margin-top': dim.height - 1}).show();
+		$selectedBtnPositive.css({'margin-top': dim.height - 1}).show();
+		$selectedTitle.text($this.prop('tagName')).css({'margin-top': -$selectedTitle.outerHeight()	}).show();
+	}
+	function setSelectedOver ($this){
+		var pos = getObjDimensions($this);
+		$selectedOver.css({left: pos.left, top: pos.top, height: pos.height, width: pos.width}).show();
+	}
+	$('#family').on('click', '#item-family', function(e){
+		e.stopPropagation();
 		var index = $(this).attr('data-index');
 		$current_component = current_family[index];
 		buildProperties();
-		setSelector($current_component);
+		setSelected($current_component, $selected);
+	});
+	$('body').click(function(e){
+		e.stopPropagation();
+		removeSelected();
 	});
 	function getFamily(){
 		var parents = $current_component.parents();
@@ -343,9 +376,6 @@ $(function(){
 		//console.log(retorno);
 		$('#family').html('').html(retorno.join(' <span class="glyphicon glyphicon-chevron-right"></span> '));
 	}
-	$('#tela').click(function(){
-		//$selector.hide();
-	});
 	$('#properties').on('click', 'input[data-nice-behavior="switch-class-checkbox"]', function(){
 		var classToSwitch = $(this).attr('classToSwitch');
 		if ($(this).is(':checked')) {
@@ -354,9 +384,6 @@ $(function(){
 			$current_component.removeClass(classToSwitch);
 		}
 	});
-	$('#tela').click(function(){
-		removeSelector();
-	});
 	$('#properties').on('click', 'button[data-nice-behavior="add-grid-col"]', function(){
 		$current_component.append('<div data-nice-type="grid-col" class="col-md-6 connected-custom connected editor-grid-col">Olá</div>');
 	});
@@ -364,17 +391,21 @@ $(function(){
 		$current_component.remove();
 		clearProperties();
 		clearFamily();
-		removeSelector();
+		removeSelected();
 	});
-	$('#properties').on('click', 'button[data-nice-behavior="duplicate-self"]', function(){
+	$('body').on('click', 'button[data-nice-behavior="duplicate-self"]', function(){
 		var $parent = $current_component.parent();
 		var newComponent = $current_component.clone();
 		newComponent.appendTo($parent);
-		setSelector(newComponent);
+		setSelected(newComponent);
 	});
 	$('#properties').on('keyup', 'input[data-nice-behavior="property-text"]', function(e){
+		$current_component.text($(this).val());
+		setSelected($current_component);
+	});
+	$('#properties').on('keyup', 'textarea[data-nice-behavior="property-text"]', function(e){
 		$current_component.html($(this).val());
-		setSelector($current_component);
+		setSelected($current_component);
 	});
 	$('#properties').on('change', 'select[data-nice-behavior="select-class"]', function(e){
 		var $this = $(this);
