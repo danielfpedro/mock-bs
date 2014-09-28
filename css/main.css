@@ -308,9 +308,11 @@ textarea {
 	border: 1px solid blue;
 }*/
 .tela{
+    cursor: default;
     position: relative;
     height: 85%;
-	width: 100%;
+	width: 90%;
+    margin-left: 5%;
     /*background-color: red;*/
 }
 #family {
@@ -319,23 +321,19 @@ textarea {
 }
 .properties{
 }
-.editor-grid-row{
-	border: 1px solid #E7E7E7;
-	margin: 0!important;
-}
 .editor-grid-col{
-	border: 1px solid #EEE;
-/*	margin: 5px 0;*/
+	border: 1px solid #DDD;
+	margin: 10px 0;
 	min-height: 40px!important;
 	border-radius: 4px;
 }
 .editor-grid-row{
-    border: 1px solid #EEE;
+    border: 1px solid #DDD;
 /*  margin: 5px 0;*/
     min-height: 40px!important;
     border-radius: 4px;
 }
-.editor-selector, .editor-selected{
+/*.editor-selector, .editor-selected{
     border-radius: 3px;
 	border: 1px solid #e74c3c;
 	position: absolute;
@@ -345,7 +343,7 @@ textarea {
 }
 .editor-selected{
     background-color: blue;
-}
+}*/
 /*LAYOUT*/
 html, body {
     height: 100%;
@@ -358,26 +356,28 @@ html, body {
     background-color: #EEE;
 }
 .col-a{
+    z-index: 3;
     overflow: auto;
     width: 15%;
 }
 .col-b{
+    z-index: 2;
     width: 70%;
     background-color: #FFF;
 }
 .col-c{
+    z-index: 1;
     width: 15%;
 }
 
 #tela > *{
-    cursor: default;
 }
 #family{
     cursor: pointer;
     height: 40px;
 }
 ul#components > li > a {
-    cursor: -webkit-grab; cursor: -moz-grab;
+    /*cursor: -webkit-grab; cursor: -moz-grab;*/
 }
 
 
@@ -390,9 +390,12 @@ ul#components > li > a {
   border-radius: 2px;
   border: 1.5px solid #9b59b6;
   position:absolute;
-  z-index:1000;
   display: none;
   pointer-events: none;
+  z-index: 9;
+}
+.selectedOver{
+    z-index: 8;
 }
 .selected{
     background-color: rgba(155, 89, 182, 0.1);
@@ -410,10 +413,10 @@ ul#components > li > a {
   color: #FFF;
   text-transform: lowercase;
   font-size: 11px;
+  z-index: 9;
 }
 .selectedBtnNegative, .selectedBtnPositive{
   pointer-events: auto;
-  z-index: 1000;
   cursor: pointer;
   border: 0;
   border-radius: 2px;
@@ -423,12 +426,22 @@ ul#components > li > a {
   background-color: #e74c3c;
   color: #FFF;
   font-weight: bold;
-  width: 20px;
+  width: 17px;
   padding: 2px 0;
-  font-size: 12px;
+  font-size: 10px;
   text-align: center;
+  z-index: 100000;
 }
 .selectedBtnPositive{
-  background-color: #3498db;
-  left: 0;
+    top: 0;
+    background-color: #3498db;
+}
+
+.placeholder{
+    border: 0;
+    border-bottom: 2px solid #9b59b6;
+    background: none;
+    list-style: none;
+    list-style-type: none;
+    width:  100%;
 }

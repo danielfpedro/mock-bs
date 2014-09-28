@@ -4,7 +4,7 @@ $(function(){
 	var $selectedOver = $('<div/>').addClass('selectedOver').appendTo('body');
 
 	var $selectedBtnNegative = $('<button/>')
-			.attr({'title': 'Deletar'})
+			.attr({'title': 'Deletar', 'data-nice-behavior': 'remove-self'})
 			.addClass('selectedBtnNegative')
 			.html('<span class="glyphicon glyphicon-trash"></span>')
 			.appendTo($selected),
@@ -15,7 +15,7 @@ $(function(){
 			.appendTo($selected);
 
 	var $selectedTitle = $('<div/>')
-		.addClass('selectedTitle').appendTo($selected);
+		.addClass('selectedTitle').appendTo('body');
 
 	$('ul#components > li > a').click(function(){
 		return false;
@@ -51,7 +51,6 @@ $(function(){
 	$('#slc-viewport').change(function(){
 		var newClass,
 			width = '100%',
-			marginLeft = 0,
 			$this = $(this);
 
 		switch($this.val()) {
@@ -62,22 +61,26 @@ $(function(){
 			case 'md':
 				newClass = 'force-md';
 				width = '85%';
-				marginLeft = '7.5%';
 			break;
 			case 'sm':
 				newClass = 'force-sm';
-				marginLeft = '17.5%';
 				width = '65%';
 			break;
 			case 'xs':
 				newClass = 'force-xs';
-				marginLeft = '30%';
 				width = '40%';
 			break;
 		};
+		var marginLeft = (100-parseInt(width))/2;
+		console.log(marginLeft);
+		
+		removeSelected();
+		removeSelectedOver();
 		$('#tela').animate({width: width}, function(){
 			$('#tela').removeClass('force-xs force-sm force-md force-lg');
-			$('#tela').addClass(newClass).animate({'margin-left': marginLeft});
+			$('#tela').addClass(newClass).animate({'margin-left': marginLeft + '%'}, function(){
+
+			});
 		});
 	});
 
@@ -265,7 +268,7 @@ $(function(){
 		},
 		{
 			type: 'grid-row',
-			content: '<div class="row editor-grid-row" data-nice-type="grid-row">\n\t<div class="editor-grid-col col-md-6 connected-custom connected" data-nice-type="grid-col"></div>\n\t<div class="col-md-6 connected-custom connected editor-grid-col" data-nice-type="grid-col"></div>\n</div>\n'
+			content: '<div class="row editor-grid-row" data-nice-type="grid-row"><div class="editor-grid-col col-md-6 connected-custom connected" data-nice-type="grid-col"></div><div class="col-md-6 connected-custom connected editor-grid-col" data-nice-type="grid-col"></div></div>'
 		}
 	];
 	
@@ -273,9 +276,19 @@ $(function(){
 		cancel: '',
 		helper: 'clone',
 		connectWith: '#tela, .connected-custom',
+		placeholder: 'placeholder',
+		forcePlaceholderSize: true,
+		start: function(){
+			removeSelected();
+			removeSelectedOver();
+		},
+		sort: function(){
+			removeSelected();
+			removeSelectedOver();
+		},
 		stop: function(event, ui){
 			replaceWith(ui.item.attr('data-type'), ui.item);
-			$('.connected-custom').sortable(opts);
+			$('.connected-custom').sortable(opts).disableSelection();;
 		}
 	}
 	
@@ -283,14 +296,30 @@ $(function(){
 		connectWith: ".connected",
 		cancel: '',
 		helper: 'clone',
+		placeholder: 'placeholder',
+		forcePlaceholderSize: true,
+		start: function(){
+			removeSelected();
+			removeSelectedOver();
+		},
+		sort: function(){
+			removeSelected();
+			removeSelectedOver();
+		},
 		stop: function(event, ui){
 			replaceWith(ui.item.attr('data-type'), ui.item);
-			$('.connected-custom').sortable(opts);
+			$('.connected-custom').sortable(opts).disableSelection();;
 		}
 	}).disableSelection();
 	
 	$( "#components li" ).draggable({
-		helper: 'clone',
+		// helper: 'clone',
+		helper: function(ui){
+			var component = getComponentItem($(ui.delegateTarget).attr('data-type'));
+			component = $(component).css({width: '200px'});
+			return component;
+		},
+		appendTo: 'body',
 		connectToSortable: '.connected',
 	}).disableSelection();
 	
@@ -301,6 +330,23 @@ $(function(){
 			}
 		});
 	}
+	function getComponentItem(type){
+		var retorno;
+		$.each(components, function(index, value){
+			if (value.type == type) {
+				retorno = value.content;
+				return false;
+			}
+		});
+
+		return retorno;
+	}
+	$('#tela').click(function(){
+		removeSelected();
+	});
+	$('.col-b').scroll(function(){
+		setSelected($current_component);
+	});
 	$('#tela').on('click', '*', function(e){
 		e.stopPropagation();
 		var $this = $(this);
@@ -309,18 +355,27 @@ $(function(){
 		getFamily();
 		setSelected($this);
 	});
-	// $("#tela").on({
-	// 	mouseenter: function (e) {
-	// 		// e.stopPropagation();
-	// 		setSelected($(this), $selectedOver);
-	// 	},
-	// 	mouseleave: function (e) {
-	// 		// e.stopPropagation();
-	// 		removeSelected($selectedOver);
-	// 	}
-	// }, '*');
+	// $("#tela").on('mouseenter', '*', function (e) {
+	// 	e.stopPropagation();
+	// 	$(this).off('mouseenter');
+	// 	setSelectedOver($(this));
+	// 	console.log('Entrou');
+	// });
+	$('#tela').on('mouseover', '*', function(e){
+		e.stopPropagation();
+		removeSelectedOver();
+		setSelectedOver($(this));
+	});
+	$('#tela').on('mouseout', '*', function(){
+		removeSelectedOver();
+	});
 	function removeSelected() {
 		$selected.hide();
+		$selectedTitle.hide();
+	}
+	function removeSelectedOver() {
+		$selectedOver.hide();
+		$selectedTitle.hide();
 	}
 	function getObjDimensions($this){
 		return {
@@ -332,14 +387,26 @@ $(function(){
 	}
 	function setSelected ($this){
 		var dim = getObjDimensions($this);
+		// dim.left = '200px';
+		// dim.height = '100px';
+		// dim.top = '200px';
+		// dim.width = '600px';
 		$selected.css({left: dim.left, top: dim.top, height: dim.height, width: dim.width}).show();
 		$selectedBtnNegative.css({'margin-top': dim.height - 1}).show();
-		$selectedBtnPositive.css({'margin-top': dim.height - 1}).show();
-		$selectedTitle.text($this.prop('tagName')).css({'margin-top': -$selectedTitle.outerHeight()	}).show();
+		$selectedBtnPositive.css({'margin-top': -$selectedBtnPositive.outerHeight()}).show();
 	}
 	function setSelectedOver ($this){
-		var pos = getObjDimensions($this);
-		$selectedOver.css({left: pos.left, top: pos.top, height: pos.height, width: pos.width}).show();
+		var dim = getObjDimensions($this);
+		$selectedOver.css({left: dim.left, top: dim.top, height: dim.height, width: dim.width}).show();
+		$selectedTitle
+			.text($this.prop('tagName'))
+			.css(
+				{
+					'left': dim.left,
+					'top': dim.top,
+					'margin-top': -$selectedTitle.outerHeight()
+				})
+			.show();
 	}
 	$('#family').on('click', '#item-family', function(e){
 		e.stopPropagation();
@@ -348,10 +415,10 @@ $(function(){
 		buildProperties();
 		setSelected($current_component, $selected);
 	});
-	$('body').click(function(e){
-		e.stopPropagation();
-		removeSelected();
-	});
+	// $('body').click(function(e){
+	// 	e.stopPropagation();
+	// 	removeSelected();
+	// });
 	function getFamily(){
 		var parents = $current_component.parents();
 		console.log($current_component);
@@ -387,17 +454,19 @@ $(function(){
 	$('#properties').on('click', 'button[data-nice-behavior="add-grid-col"]', function(){
 		$current_component.append('<div data-nice-type="grid-col" class="col-md-6 connected-custom connected editor-grid-col">Olá</div>');
 	});
-	$('#properties').on('click', 'button[data-nice-behavior="remove-self"]', function(){
+	$('body').on('click', 'button[data-nice-behavior="remove-self"]', function(){
 		$current_component.remove();
 		clearProperties();
 		clearFamily();
 		removeSelected();
 	});
-	$('body').on('click', 'button[data-nice-behavior="duplicate-self"]', function(){
+	$('body').on('click', 'button[data-nice-behavior="duplicate-self"]', function(e){
+		e.stopPropagation();
 		var $parent = $current_component.parent();
-		var newComponent = $current_component.clone();
-		newComponent.appendTo($parent);
-		setSelected(newComponent);
+		var $newComponent = $current_component.clone();
+		$newComponent.insertAfter($current_component);
+		$current_component = $newComponent;
+		setSelected($newComponent);
 	});
 	$('#properties').on('keyup', 'input[data-nice-behavior="property-text"]', function(e){
 		$current_component.text($(this).val());
